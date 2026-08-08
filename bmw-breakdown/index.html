@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMW Breakdown — It's the Electrical System, Always Is</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>🚗💨 BMW Breakdown</h1>
+      <p class="tagline">Keep it running. It does not want to run.</p>
+    </header>
+
+    <main class="dashboard">
+      <section class="car-panel">
+        <div id="car-stage" class="car-stage">
+          <div id="car" class="car ok">🚙</div>
+          <div id="smoke" class="smoke hidden">💨</div>
+          <div id="warning" class="warning hidden">⚠️ CHECK ENGINE ⚠️</div>
+        </div>
+        <div class="model-select" id="model-select">
+          <!-- model buttons injected by JS -->
+        </div>
+      </section>
+
+      <section class="stats-panel">
+        <div class="stat">
+          <span class="stat-label">💰 Cash</span>
+          <span class="stat-value" id="cash">$0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🛣️ Distance</span>
+          <span class="stat-value" id="distance">0 mi</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">⏱️ Survived</span>
+          <span class="stat-value" id="survived">0s</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🔧 Breakdowns Fixed</span>
+          <span class="stat-value" id="fixed">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🏆 Best Time</span>
+          <span class="stat-value" id="best">0s</span>
+        </div>
+
+        <button id="drive-btn" class="drive-btn">🏎️ FLOOR IT (+$)</button>
+
+        <div id="breakdown-panel" class="breakdown-panel hidden">
+          <p id="breakdown-reason" class="breakdown-reason">The transmission is making a noise.</p>
+          <div class="repair-row">
+            <button id="repair-btn" class="repair-btn">PAY $<span id="repair-cost">0</span> TO FIX</button>
+            <div class="timer-bar-track">
+              <div id="timer-bar" class="timer-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="gameover" class="gameover hidden">
+      <div class="gameover-card">
+        <h2>💀 It's Dead. For Real This Time.</h2>
+        <p id="gameover-stats"></p>
+        <p class="quote" id="gameover-quote"></p>
+        <button id="restart-btn" class="drive-btn">Buy Another BMW</button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>All models are 100% accurate depictions of German engineering. Allegedly.</p>
+    </footer>
+  </div>
+
+<script src="game.js"></script>
+</body>
+</html>
