@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMW Breakdown — It's the Electrical System, Always Is</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="stripe"><span></span><span></span><span></span></div>
+      <h1>BMW Breakdown</h1>
+      <p class="tagline">Keep it running. It does not want to run.</p>
+    </header>
+
+    <main class="dashboard">
+      <section class="car-panel">
+        <div class="game-canvas-wrap" id="game-canvas-wrap">
+          <canvas id="game-canvas"></canvas>
+
+          <div id="start-overlay" class="stage-overlay">
+            <p class="stage-overlay-title">🔑 Turn the key</p>
+            <p class="stage-overlay-sub">Collect oil, dodge the shop. Miss a jump and it costs you.</p>
+            <button id="start-btn" class="drive-btn">Start Driving</button>
+          </div>
+        </div>
+
+        <div class="controls-row">
+          <button id="lane-left-btn" class="ctrl-btn" aria-label="Switch left">◀</button>
+          <button id="jump-btn" class="ctrl-btn ctrl-btn-jump" aria-label="Jump">⤒ JUMP</button>
+          <button id="lane-right-btn" class="ctrl-btn" aria-label="Switch right">▶</button>
+        </div>
+        <button id="tilt-btn" class="tilt-btn">📱 Tilt Steering: Off</button>
+        <p class="hint">← → or A / D to switch lanes · Space or ↑ to jump</p>
+        <p class="hint hidden" id="tilt-hint">Tilt not available here — the buttons and keys still work.</p>
+
+        <div class="model-select" id="model-select"></div>
+      </section>
+
+      <section class="stats-panel">
+        <div class="stat">
+          <span class="stat-label">🛢️ Oil</span>
+          <span class="stat-value" id="oil">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🛣️ Distance</span>
+          <span class="stat-value" id="distance">0 mi</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">❤️ Lives</span>
+          <span class="stat-value" id="lives">❤️❤️❤️</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">✅ Faults Cleared</span>
+          <span class="stat-value" id="faults">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🏆 Best Distance</span>
+          <span class="stat-value" id="best">0 mi</span>
+        </div>
+      </section>
+    </main>
+
+    <div id="gameover" class="gameover hidden">
+      <div class="gameover-card">
+        <h2>💀 It's Dead. For Real This Time.</h2>
+        <p id="gameover-stats"></p>
+        <p class="quote" id="gameover-quote"></p>
+        <button id="restart-btn" class="drive-btn">Buy Another BMW</button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>All models are 100% accurate depictions of German engineering. Allegedly.</p>
+    </footer>
+  </div>
+
+<script src="game.js"></script>
+</body>
+</html>
