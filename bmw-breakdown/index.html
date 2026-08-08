@@ -9,54 +9,53 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <h1>🚗💨 BMW Breakdown</h1>
+      <div class="stripe"><span></span><span></span><span></span></div>
+      <h1>BMW Breakdown</h1>
       <p class="tagline">Keep it running. It does not want to run.</p>
     </header>
 
     <main class="dashboard">
       <section class="car-panel">
-        <div id="car-stage" class="car-stage">
-          <div id="car" class="car ok">🚙</div>
-          <div id="smoke" class="smoke hidden">💨</div>
-          <div id="warning" class="warning hidden">⚠️ CHECK ENGINE ⚠️</div>
+        <div class="game-canvas-wrap" id="game-canvas-wrap">
+          <canvas id="game-canvas"></canvas>
+
+          <div id="start-overlay" class="stage-overlay">
+            <p class="stage-overlay-title">🔑 Turn the key</p>
+            <p class="stage-overlay-sub">Collect oil, dodge the shop. Miss a jump and it costs you.</p>
+            <button id="start-btn" class="drive-btn">Start Driving</button>
+          </div>
         </div>
-        <div class="model-select" id="model-select">
-          <!-- model buttons injected by JS -->
+
+        <div class="controls-row">
+          <button id="lane-left-btn" class="ctrl-btn" aria-label="Switch left">◀</button>
+          <button id="jump-btn" class="ctrl-btn ctrl-btn-jump" aria-label="Jump">⤒ JUMP</button>
+          <button id="lane-right-btn" class="ctrl-btn" aria-label="Switch right">▶</button>
         </div>
+        <p class="hint">← → or A / D to switch lanes · Space or ↑ to jump</p>
+
+        <div class="model-select" id="model-select"></div>
       </section>
 
       <section class="stats-panel">
         <div class="stat">
-          <span class="stat-label">💰 Cash</span>
-          <span class="stat-value" id="cash">$0</span>
+          <span class="stat-label">🛢️ Oil</span>
+          <span class="stat-value" id="oil">0</span>
         </div>
         <div class="stat">
           <span class="stat-label">🛣️ Distance</span>
           <span class="stat-value" id="distance">0 mi</span>
         </div>
         <div class="stat">
-          <span class="stat-label">⏱️ Survived</span>
-          <span class="stat-value" id="survived">0s</span>
+          <span class="stat-label">❤️ Lives</span>
+          <span class="stat-value" id="lives">❤️❤️❤️</span>
         </div>
         <div class="stat">
-          <span class="stat-label">🔧 Breakdowns Fixed</span>
-          <span class="stat-value" id="fixed">0</span>
+          <span class="stat-label">✅ Faults Cleared</span>
+          <span class="stat-value" id="faults">0</span>
         </div>
         <div class="stat">
-          <span class="stat-label">🏆 Best Time</span>
-          <span class="stat-value" id="best">0s</span>
-        </div>
-
-        <button id="drive-btn" class="drive-btn">🏎️ FLOOR IT (+$)</button>
-
-        <div id="breakdown-panel" class="breakdown-panel hidden">
-          <p id="breakdown-reason" class="breakdown-reason">The transmission is making a noise.</p>
-          <div class="repair-row">
-            <button id="repair-btn" class="repair-btn">PAY $<span id="repair-cost">0</span> TO FIX</button>
-            <div class="timer-bar-track">
-              <div id="timer-bar" class="timer-bar-fill"></div>
-            </div>
-          </div>
+          <span class="stat-label">🏆 Best Distance</span>
+          <span class="stat-value" id="best">0 mi</span>
         </div>
       </section>
     </main>

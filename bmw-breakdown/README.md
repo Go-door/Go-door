@@ -1,21 +1,27 @@
 # 🚗💨 BMW Breakdown
 
-A tiny browser game about the eternal BMW-ownership tax: it breaks down, you pay,
-it breaks down again.
+An endless runner about the eternal BMW-ownership tax: it breaks down, it
+costs you, and it breaks down again.
 
 ## How to play
 
-Open `index.html` in a browser (or serve the folder with any static file server).
+Open `index.html` in a browser (or serve the folder with any static file
+server).
 
-- Click **FLOOR IT** to drive — you earn cash and rack up distance.
-- Every so often the car breaks down with a (fake, humorous) mechanical excuse.
-- You get a short window to **pay the repair cost** and keep going.
-- Miss the window and the car dies for good — game over, with your stats.
-- Repair costs climb with every fix, and breakdowns get more frequent the
-  longer you survive, so the pressure only ramps up.
-- Earn enough lifetime cash to unlock pricier, faster, *less reliable* models.
+- The car drives itself, behind-the-wheel Crash-Bandicoot style. You steer
+  between 3 lanes and jump.
+- **← → or A / D** switch lanes. **Space or ↑** jumps. On-screen buttons work
+  too, for mouse or touch.
+- Motor faults (🛢️) sit in a lane — drive through one to collect oil.
+- Service shops (🏪) sit behind a ramp — jump while passing through that lane
+  to clear one for free. Get caught grounded in that lane and it costs 10% of
+  your current oil, plus a life.
+- **3 lives.** Lose them all and it's dead for good — game over, with your
+  stats.
+- The road gets faster and busier the farther you drive.
+- Earn enough lifetime oil to unlock pricier, faster, *less reliable* models.
 
-Best survival time and unlocked models are saved locally in your browser
+Best distance and unlocked models are saved locally in your browser
 (`localStorage`), so progress persists between sessions.
 
 ## Run it locally
@@ -26,4 +32,5 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-No build step, no dependencies — just HTML/CSS/vanilla JS.
+No build step, no dependencies — just HTML/CSS/vanilla JS (Canvas 2D for the
+game view).
