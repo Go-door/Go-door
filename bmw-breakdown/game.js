@@ -8,21 +8,25 @@ const MODELS = [
   {
     id: "e30", name: 'E30 "The Beater"', emoji: "🚙", unlockAt: 0,
     speed: 1.0, spawnMinMs: 950, spawnMaxMs: 1550, oilValue: 9, shopChance: 0.26,
+    color: "#3a6ea8", tailShape: "boxy",
     blurb: "Held together with duct tape and hope.",
   },
   {
     id: "e46", name: 'E46 "The Sweet Spot"', emoji: "🚗", unlockAt: 600,
     speed: 1.18, spawnMinMs: 850, spawnMaxMs: 1350, oilValue: 14, shopChance: 0.30,
+    color: "#1c4a7a", tailShape: "round",
     blurb: "Everyone's favorite. Still finds new ways to die.",
   },
   {
     id: "f30", name: 'F30 "The Lease Special"', emoji: "🚘", unlockAt: 2200,
     speed: 1.42, spawnMinMs: 750, spawnMaxMs: 1200, oilValue: 22, shopChance: 0.34,
+    color: "#8a8f99", tailShape: "slim",
     blurb: "Turbo lag, run-flats, and a dealer on speed dial.",
   },
   {
     id: "g20", name: 'G20 "iDrive Nightmare"', emoji: "🏎️", unlockAt: 6000,
     speed: 1.7, spawnMinMs: 620, spawnMaxMs: 1000, oilValue: 34, shopChance: 0.38,
+    color: "#262b35", tailShape: "slim",
     blurb: "The infotainment system breaks down more than the engine.",
   },
 ];
@@ -81,6 +85,8 @@ const el = {
   laneLeftBtn: document.getElementById("lane-left-btn"),
   jumpBtn: document.getElementById("jump-btn"),
   laneRightBtn: document.getElementById("lane-right-btn"),
+  tiltBtn: document.getElementById("tilt-btn"),
+  tiltHint: document.getElementById("tilt-hint"),
   modelSelect: document.getElementById("model-select"),
   oil: document.getElementById("oil"),
   distance: document.getElementById("distance"),
@@ -253,6 +259,73 @@ el.jumpBtn.addEventListener("click", () => jump());
 el.startBtn.addEventListener("click", startRun);
 el.restartBtn.addEventListener("click", startRun);
 
+// --- tilt steering (phone accelerometer) -------------------------------
+const TILT_THRESHOLD = 9; // degrees off center to trigger a lane change
+const TILT_REARM = 3.5; // degrees back toward center before it can trigger again
+let tiltEnabled = false;
+let tiltCenter = null;
+let tiltArmed = true;
+let tiltGotReading = false;
+let tiltWatchdog = null;
+
+function handleOrientation(e) {
+  if (e.gamma === null || e.gamma === undefined) return;
+  tiltGotReading = true;
+  if (tiltCenter === null) tiltCenter = e.gamma;
+  const delta = e.gamma - tiltCenter;
+  if (tiltArmed) {
+    if (delta < -TILT_THRESHOLD) { setLane(-1); tiltArmed = false; }
+    else if (delta > TILT_THRESHOLD) { setLane(1); tiltArmed = false; }
+  } else if (Math.abs(delta) < TILT_REARM) {
+    tiltArmed = true;
+  }
+}
+
+function setTiltUi(on) {
+  tiltEnabled = on;
+  el.tiltBtn.textContent = on ? "📱 Tilt Steering: On (tap to recenter)" : "📱 Tilt Steering: Off";
+  el.tiltBtn.classList.toggle("active", on);
+}
+
+function disableTilt(showUnavailable) {
+  window.removeEventListener("deviceorientation", handleOrientation);
+  if (tiltWatchdog) { clearTimeout(tiltWatchdog); tiltWatchdog = null; }
+  setTiltUi(false);
+  el.tiltHint.classList.toggle("hidden", !showUnavailable);
+}
+
+async function enableTilt() {
+  el.tiltHint.classList.add("hidden");
+  if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+    try {
+      const result = await DeviceOrientationEvent.requestPermission();
+      if (result !== "granted") { disableTilt(true); return; }
+    } catch (err) { disableTilt(true); return; }
+  } else if (typeof DeviceOrientationEvent === "undefined") {
+    disableTilt(true);
+    return;
+  }
+  tiltCenter = null;
+  tiltArmed = true;
+  tiltGotReading = false;
+  window.addEventListener("deviceorientation", handleOrientation);
+  setTiltUi(true);
+  tiltWatchdog = setTimeout(() => {
+    if (!tiltGotReading) disableTilt(true);
+  }, 1500);
+}
+
+el.tiltBtn.addEventListener("click", () => {
+  if (tiltEnabled) {
+    // Already on: treat a tap as "recenter" rather than turning it off,
+    // since that's almost always what you want mid-run.
+    tiltCenter = null;
+    tiltArmed = true;
+  } else {
+    enableTilt();
+  }
+});
+
 // --- spawning & collision ---------------------------------------------
 function spawnObstacle(now) {
   const busyLanes = new Set(world.obstacles.filter((o) => o.progress < 0.85).map((o) => o.lane));
@@ -420,6 +493,159 @@ function drawObstacle(ob) {
   }
 }
 
+// --- player car: drawn from behind, facing down the road -------------
+function shadeColor(hex, percent) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = clamp((num >> 16) + Math.round(2.55 * percent), 0, 255);
+  const g = clamp(((num >> 8) & 0xff) + Math.round(2.55 * percent), 0, 255);
+  const b = clamp((num & 0xff) + Math.round(2.55 * percent), 0, 255);
+  return `rgb(${r},${g},${b})`;
+}
+
+function drawRoundel(cx, cy, r) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#14171d";
+  ctx.fill();
+  const rr = r * 0.78;
+  const colors = ["#eef1f5", "#1e5fb8", "#eef1f5", "#1e5fb8"];
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, rr, (Math.PI / 2) * i - Math.PI / 2, (Math.PI / 2) * (i + 1) - Math.PI / 2);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawTaillight(sx, dark) {
+  // sx: -1 (left) or 1 (right). Drawn in local car-unit space.
+  const style = world.model.tailShape;
+  const outerX = sx * 26;
+  if (style === "boxy") {
+    // E30: one large rectangular unit wrapping the corner, banded.
+    const w = 10, top = -27, h = 15;
+    const x = sx > 0 ? outerX - w : outerX;
+    ctx.fillStyle = "#3a2020";
+    ctx.beginPath();
+    ctx.roundRect(x, top, w, h, 1.5);
+    ctx.fill();
+    ctx.fillStyle = "#e8a23d";
+    ctx.fillRect(x + 1, top + 1, w - 2, h * 0.28);
+    ctx.fillStyle = "#e0272f";
+    ctx.fillRect(x + 1, top + h * 0.32, w - 2, h * 0.46);
+    ctx.fillStyle = "#cfd6e0";
+    ctx.fillRect(x + 1, top + h * 0.82, w - 2, h * 0.14);
+  } else if (style === "round") {
+    const w = 9, top = -26, h = 13;
+    const x = sx > 0 ? outerX - w : outerX;
+    ctx.fillStyle = "#3a2020";
+    ctx.beginPath();
+    ctx.roundRect(x, top, w, h, 3.5);
+    ctx.fill();
+    ctx.fillStyle = "#e0272f";
+    ctx.beginPath();
+    ctx.roundRect(x + 1, top + 1, w - 2, h - 4, 2.5);
+    ctx.fill();
+    ctx.fillStyle = "#cfd6e0";
+    ctx.fillRect(x + 1, top + h - 3.5, w - 2, 2.5);
+  } else {
+    // slim: modern LED light-bar sliver.
+    const w = 12, top = -22, h = 4;
+    const x = sx > 0 ? outerX - w + 4 : outerX - 4;
+    ctx.fillStyle = "#e0272f";
+    ctx.beginPath();
+    ctx.roundRect(x, top, w, h, 2);
+    ctx.fill();
+  }
+}
+
+function drawCarRear(x, groundY, scale) {
+  const model = world.model;
+  const bodyColor = model.color;
+  const bodyDark = shadeColor(bodyColor, -20);
+  const bodyLight = shadeColor(bodyColor, 14);
+
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(scale, scale);
+
+  // rear bumper
+  ctx.fillStyle = "#22262f";
+  ctx.beginPath();
+  ctx.roundRect(-30, -12, 60, 12, 4);
+  ctx.fill();
+
+  // exhaust tips
+  ctx.fillStyle = "#111318";
+  ctx.beginPath(); ctx.ellipse(-15, -3, 3.2, 2.1, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(15, -3, 3.2, 2.1, 0, 0, Math.PI * 2); ctx.fill();
+
+  // lower body / quarter panels
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath();
+  ctx.moveTo(-29, -12);
+  ctx.lineTo(29, -12);
+  ctx.lineTo(23, -30);
+  ctx.lineTo(-23, -30);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = bodyDark;
+  ctx.fillRect(-29, -14, 58, 2.4);
+
+  // taillights
+  drawTaillight(-1, bodyDark);
+  drawTaillight(1, bodyDark);
+
+  // trunk line, plate, roundel
+  ctx.strokeStyle = bodyDark;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(-19, -24); ctx.lineTo(19, -24); ctx.stroke();
+
+  ctx.fillStyle = "#e9e6da";
+  ctx.beginPath();
+  ctx.roundRect(-9, -19.5, 18, 7, 1.5);
+  ctx.fill();
+  ctx.strokeStyle = "#9a9683";
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+
+  drawRoundel(0, -27.5, 3.2);
+
+  // greenhouse: C-pillars + rear window
+  ctx.fillStyle = bodyDark;
+  ctx.beginPath();
+  ctx.moveTo(-23, -30); ctx.lineTo(23, -30); ctx.lineTo(17, -44); ctx.lineTo(-17, -44);
+  ctx.closePath();
+  ctx.fill();
+
+  const glassGrad = ctx.createLinearGradient(0, -44, 0, -30);
+  glassGrad.addColorStop(0, "#4b5568");
+  glassGrad.addColorStop(1, "#171b22");
+  ctx.fillStyle = glassGrad;
+  ctx.beginPath();
+  ctx.moveTo(-14, -31); ctx.lineTo(14, -31); ctx.lineTo(10, -42); ctx.lineTo(-10, -42);
+  ctx.closePath();
+  ctx.fill();
+
+  // side mirrors (peeking around the C-pillars, hinting the 3/4 rear view)
+  ctx.fillStyle = bodyDark;
+  ctx.beginPath(); ctx.roundRect(-27, -34, 4, 3, 1); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(23, -34, 4, 3, 1); ctx.fill();
+
+  // roof
+  ctx.fillStyle = bodyLight;
+  ctx.beginPath();
+  ctx.roundRect(-17, -47, 34, 4, 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function drawPlayer(now) {
   const x = laneXAt(world.laneVisual, 1);
   const baseY = yAt(1);
@@ -432,7 +658,7 @@ function drawPlayer(now) {
   ctx.beginPath();
   ctx.ellipse(x, baseY + 6, 26 - jumpOffset * 0.2, 8, 0, 0, Math.PI * 2);
   ctx.fill();
-  drawEmoji(world.model.emoji, x, baseY - jumpOffset, 54);
+  drawCarRear(x, baseY - jumpOffset, 1.15);
 }
 
 function drawToast(now) {

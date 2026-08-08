@@ -170,6 +170,28 @@ body {
   margin: 0 0 16px;
 }
 
+.tilt-btn {
+  display: block;
+  margin: 0 auto 8px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--dash-2);
+  border: 1px solid var(--dash-line);
+  color: var(--ink-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.tilt-btn:hover { border-color: var(--m-blue); color: var(--ink); }
+.tilt-btn.active {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: rgba(51, 196, 122, 0.1);
+}
+.tilt-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
 .model-select { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
 .model-btn {
